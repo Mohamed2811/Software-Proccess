@@ -118,6 +118,26 @@ def logout():
     flash('You are now logged out', 'success')
     return redirect(url_for('login'))
 
+# Dashboard
+@app.route('/dashboard')
+@is_logged_in
+def dashboard():
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    # Show games only from the user logged in
+    result = cur.execute("SELECT * FROM games WHERE username = %s", [session['username']])
+
+    games = cur.fetchall()
+
+    if result > 0:
+        return render_template('dashboard.html', games=games)
+    else:
+        msg = 'No games Found'
+        return render_template('dashboard.html', msg=msg)
+    # Close connection
+    cur.close()
+
 if __name__ == '__main__':
     app.secret_key='secret123'
     app.run(debug=True)
