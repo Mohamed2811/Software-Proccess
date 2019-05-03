@@ -110,6 +110,14 @@ def is_logged_in(f):
             return redirect(url_for('login'))
     return wrap
 
+# Logout
+@app.route('/logout')
+@is_logged_in
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
+
 if __name__ == '__main__':
     app.secret_key='secret123'
     app.run(debug=True)
