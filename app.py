@@ -159,6 +159,57 @@ def add_game():
 
     return render_template('add_game.html', form=form)
 
+# Edit game
+@app.route('/edit_game/<string:id>', methods=['GET', 'POST'])
+@is_logged_in
+def edit_game(id):
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    # Get game by id
+    result = cur.execute("SELECT * FROM games WHERE id = %s", [id])
+
+    game = cur.fetchone()
+    cur.close()
+    # Get form
+    if game["username"] == session['username']:
+
+        form = GameForm(request.form)
+
+        # Populate game form fields
+        form.question.data = game['question']
+        form.choice1.data = game['choice1']
+        form.choice2.data = game['choice2']
+        form.choice3.data = game['choice3']
+        form.answer.data = game['answer']
+
+
+        if request.method == 'POST':
+            question = request.form['question']
+            choice1 = request.form['choice1']
+            choice2 = request.form['choice2']
+            choice3 = request.form['choice3']
+            answer = request.form['answer']
+            # Create Cursor
+            cur = mysql.connection.cursor()
+            # Execute
+            cur.execute ("UPDATE games SET question=%s, choice1=%s, choice2=%s, choice3=%s, answer=%s WHERE id=%s",(question, choice1,choice2,choice3,answer, id))
+            # Commit to DB
+            mysql.connection.commit()
+
+            #Close connection
+            cur.close()
+
+            flash('Game Updated', 'success')
+
+            return redirect(url_for('games'))
+    else:
+        flash('Unauthorized Access', 'warning')
+
+        return redirect(url_for('games'))
+
+    return render_template('edit_game.html', form=form)
+
 # Dashboard
 @app.route('/dashboard')
 @is_logged_in
