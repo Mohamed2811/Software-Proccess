@@ -210,6 +210,37 @@ def edit_game(id):
 
     return render_template('edit_game.html', form=form)
 
+
+# Delete game
+@app.route('/delete_game/<string:id>', methods=['POST'])
+@is_logged_in
+def delete_game(id):
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    result = cur.execute("SELECT * FROM games WHERE id = %s", [id])
+    game = cur.fetchone()
+
+    if game["username"] == session['username']:
+
+
+        # Execute
+        cur.execute("DELETE FROM games WHERE id = %s", [id])
+
+        # Commit to DB
+        mysql.connection.commit()
+
+        #Close connection
+        cur.close()
+
+        flash('game Deleted', 'success')
+
+        return redirect(url_for('dashboard'))
+    else:
+        flash('Unauthorized Access', 'warning')
+
+        return redirect(url_for('dashboard'))
+
 # Dashboard
 @app.route('/dashboard')
 @is_logged_in
