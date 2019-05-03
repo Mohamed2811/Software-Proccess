@@ -118,6 +118,47 @@ def logout():
     flash('You are now logged out', 'success')
     return redirect(url_for('login'))
 
+
+
+
+# game Form Class
+class GameForm(Form):
+    question = StringField('question', [validators.Length(min=1, max=500)])
+    choice1 = TextAreaField('choice1', [validators.Length(min=1)])
+    choice2 = TextAreaField('choice2', [validators.Length(min=1)])
+    choice3 = TextAreaField('choice3', [validators.Length(min=1)])
+    answer = TextAreaField('answer', [validators.Length(min=1)])
+
+# Add game
+@app.route('/add_game', methods=['GET', 'POST'])
+@is_logged_in
+def add_game():
+    form = GameForm(request.form)
+    if request.method == 'POST' and form.validate():
+        question = form.question.data
+        choice1 = form.choice1.data
+        choice2 = form.choice2.data
+        choice3 = form.choice3.data
+        answer = form.answer.data
+
+        # Create Cursor
+        cur = mysql.connection.cursor()
+
+        # Execute
+        cur.execute("INSERT INTO games(username,question, choice1, choice2, choice3,answer) VALUES(%s, %s, %s,%s, %s, %s)",(session['username'],question,choice1,choice2,choice3,answer))
+
+        # Commit to DB
+        mysql.connection.commit()
+
+        #Close connection
+        cur.close()
+
+        flash('game Created', 'success')
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('add_game.html', form=form)
+
 # Dashboard
 @app.route('/dashboard')
 @is_logged_in
