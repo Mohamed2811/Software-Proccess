@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+{% block body %}
+<h1>Games</h1>
+<table class="table table-striped">
+    <tr>
+        <th>username</th>
+        <th>question</th>
+        <th>choice1</th>
+        <th>choice2</th>
+        <th>choice3</th>
+        <th></th>
+        <th></th>
+    </tr>
+    {% for game in games %}
+    <tr>
+        <td>{{game.username}}</td>
+        <td>{{game.question}}</td>
+        <td>
+            <form action="{{url_for('check_answer', id=game.id, choice=game.choice1)}}" method="post">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="submit" value="{{game.choice1}}" class="btn btn-danger">
+            </form>
+        </td>
+        <td>
+            <form action="{{url_for('check_answer', id=game.id, choice=game.choice2)}}" method="post">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="submit" value="{{game.choice2}}" class="btn btn-danger">
+            </form>
+        </td>
+        <td>
+            <form action="{{url_for('check_answer', id=game.id, choice=game.choice3)}}" method="post">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="submit" value="{{game.choice3}}" class="btn btn-danger">
+            </form>
+        </td>
+        <td><a href="edit_game/{{game.id}}" class="btn btn-default pull-right">Edit</a></td>
+        <td>
+            <form action="{{url_for('delete_game', id=game.id)}}" method="post">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="submit" value="Delete" class="btn btn-danger">
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

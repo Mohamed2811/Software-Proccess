@@ -27,6 +27,41 @@ def index():
 def about():
     return render_template('about.html')
 
+
+# games
+@app.route('/games')
+def games():
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    # Get games
+    result = cur.execute("SELECT * FROM games")
+
+    games = cur.fetchall()
+
+    if result > 0:
+        return render_template('games.html', games=games)
+    else:
+        msg = 'No games Found'
+        return render_template('games.html', msg=msg)
+    # Close connection
+    cur.close()
+
+
+#Single game
+@app.route('/game/<string:id>/')
+def game(id):
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    # Get game
+    result = cur.execute("SELECT * FROM games WHERE id = %s", [id])
+
+    game = cur.fetchone()
+
+    return render_template('game.html', game=game)
+
+
 # Register Form Class
 class RegisterForm(Form):
     username = StringField('Username', [validators.Length(min=4, max=25)])
@@ -60,6 +95,7 @@ def register():
 
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
 
 # User login
 @app.route('/login', methods=['GET', 'POST'])
@@ -118,8 +154,25 @@ def logout():
     flash('You are now logged out', 'success')
     return redirect(url_for('login'))
 
+# Dashboard
+@app.route('/dashboard')
+@is_logged_in
+def dashboard():
+    # Create cursor
+    cur = mysql.connection.cursor()
 
+    # Show games only from the user logged in
+    result = cur.execute("SELECT * FROM games WHERE username = %s", [session['username']])
 
+    games = cur.fetchall()
+
+    if result > 0:
+        return render_template('dashboard.html', games=games)
+    else:
+        msg = 'No games Found'
+        return render_template('dashboard.html', msg=msg)
+    # Close connection
+    cur.close()
 
 # game Form Class
 class GameForm(Form):
@@ -128,7 +181,6 @@ class GameForm(Form):
     choice2 = TextAreaField('choice2', [validators.Length(min=1)])
     choice3 = TextAreaField('choice3', [validators.Length(min=1)])
     answer = TextAreaField('answer', [validators.Length(min=1)])
-
 # Add game
 @app.route('/add_game', methods=['GET', 'POST'])
 @is_logged_in
@@ -158,6 +210,7 @@ def add_game():
         return redirect(url_for('dashboard'))
 
     return render_template('add_game.html', form=form)
+
 
 # Edit game
 @app.route('/edit_game/<string:id>', methods=['GET', 'POST'])
@@ -210,7 +263,6 @@ def edit_game(id):
 
     return render_template('edit_game.html', form=form)
 
-
 # Delete game
 @app.route('/delete_game/<string:id>', methods=['POST'])
 @is_logged_in
@@ -241,25 +293,28 @@ def delete_game(id):
 
         return redirect(url_for('dashboard'))
 
-# Dashboard
-@app.route('/dashboard')
+#check answer!
+@app.route('/check_answer/<string:id>/<string:choice>', methods=['POST'])
 @is_logged_in
-def dashboard():
+def check_answer(id,choice):
     # Create cursor
     cur = mysql.connection.cursor()
 
-    # Show games only from the user logged in
-    result = cur.execute("SELECT * FROM games WHERE username = %s", [session['username']])
+    # Execute
+    result = cur.execute("SELECT answer FROM games WHERE id = %s", [id])
+    game = cur.fetchone()
 
-    games = cur.fetchall()
-
-    if result > 0:
-        return render_template('dashboard.html', games=games)
-    else:
-        msg = 'No games Found'
-        return render_template('dashboard.html', msg=msg)
-    # Close connection
+    #Close connection
     cur.close()
+    if game["answer"] == int(choice):
+        flash('Correct answer', 'success')
+    else:
+        flash('Wrong answer', 'warning')
+
+    return redirect(url_for('games'))
+
+
+
 
 if __name__ == '__main__':
     app.secret_key='secret123'
