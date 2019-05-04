@@ -7,10 +7,10 @@ from functools import wraps
 app = Flask(__name__)
 
 # Config MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'root1234'
-app.config['MYSQL_DB'] = 'myflaskapp'
+app.config['MYSQL_HOST'] = 'sql7.freemysqlhosting.net'
+app.config['MYSQL_USER'] = 'sql7290492'
+app.config['MYSQL_PASSWORD'] = 'Fj5EnRi925'
+app.config['MYSQL_DB'] = 'sql7290492'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 # init MYSQL
 mysql = MySQL(app)
@@ -57,10 +57,12 @@ def game(id):
     # Get game
     result = cur.execute("SELECT * FROM games WHERE id = %s", [id])
 
-    game = cur.fetchone()
-
-    return render_template('game.html', game=game)
-
+    games = cur.fetchone()
+    if result > 0:
+        return render_template('game.html', games=games)
+    else:
+        msg = 'No games Found'
+        return render_template('game.html', msg=msg)
 
 # Register Form Class
 class RegisterForm(Form):
